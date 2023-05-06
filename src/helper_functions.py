@@ -54,19 +54,17 @@ def get_conformations(raw):
     return conformations
 
 
-def get_sample_conformation(conformations, k1, k2):
+def get_sample_conformation(conformations, step):
     """
     Extract a sample of conformations from all conformations
     :param conformations: the total list of conformations
-    :param k1: the lower bound from which we want to extract
-    :param k2: the higher bound until which we want to extract
+    :param step: step at which we bypass conformations
     :return: conform_sample: the extracted sample of conformations
     """
     conform_sample = []
-    if k2 > len(conformations) or k1 > k2:
-        raise Exception("The higher bound is greater than the max length or k1>k2")
-    for k in range(k1, k2):
-        conform_sample.append(conformations[k])
+    for k in range(len(conformations)):
+        if k % step == 0:
+            conform_sample.append(conformations[k])
     return conform_sample
 
 
