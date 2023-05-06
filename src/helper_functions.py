@@ -1,6 +1,8 @@
 import numpy as np
 import re
 
+from tqdm import tqdm
+
 
 def read_xyz(filename, n_rows, n_columns):
     """
@@ -38,6 +40,48 @@ def read_xyz(filename, n_rows, n_columns):
     f.close()
     V = np.array(V)
     return V
+
+
+def get_conformations(raw):
+    """
+    Transform the raw matrix into conformation matrix
+    :param raw: raw matrix
+    :return: conformations : list of conformations
+    """
+    conformations = []
+    for k in range(int(len(raw) / 10)):
+        conformations.append([raw[k * 10:(k + 1) * 10]])
+    return conformations
+
+
+def get_sample_conformation(conformations, k1, k2):
+    """
+    Extract a sample of conformations from all conformations
+    :param conformations: the total list of conformations
+    :param k1: the lower bound from which we want to extract
+    :param k2: the higher bound until which we want to extract
+    :return: conform_sample: the extracted sample of conformations
+    """
+    conform_sample = []
+    if k2 > len(conformations) or k1 > k2:
+        raise Exception("The higher bound is greater than the max length or k1>k2")
+    for k in range(k1, k2):
+        conform_sample.append(conformations[k])
+    return conform_sample
+
+
+def compute_RMSD_matrix(conform_sample):
+    """
+    Compute the RMSD matrix for a sample of conformations
+    :param conform_sample: the sample of conformations
+    :return: RMSD_m_sample: the associated RMSD matrix
+    """
+    n = len(conform_sample)
+    RMSD_m_sample = np.zeros((n, n))
+    for k in tqdm(range(n)):
+        for i in range(n):
+            RMSD_m_sample[k, i] = quaternion_rmsd(np.array(conform_sample[k][0]), np.array(conform_sample[i][0]))
+    return RMSD_m_sample
 
 
 def quaternion_rotate(X, Y):
