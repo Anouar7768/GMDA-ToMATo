@@ -12,12 +12,14 @@ def read_xyz(filename, n_rows, n_columns):
     ----------
     filename : string
         Filename to read
+    n_rows : int
+        number of rows expected in the dataset
+    n_columns : int
+        number of columns expected in the dataset
     Returns
     -------
-    atoms : list
-        List of atomic types
     V : array
-        (N,3) where N is number of atoms
+        (n_rows, n_columns) where N is number of rows
     """
 
     f = open(filename, 'r')
@@ -83,17 +85,26 @@ def get_dihedral_sample(dihedral, step):
     return dihedral_sample
 
 
-def compute_RMSD_matrix(conform_sample):
+def compute_RMSD_matrix(conform_sample, method = "kabsch"):
     """
     Compute the RMSD matrix for a sample of conformations
-    :param conform_sample: the sample of conformations
+    :param 
+    - conform_sample: the sample of conformations
+    - method: the method used to compute the RMSD for each pair of conformations, can take the values "kabsch" or "quaternion"
     :return: RMSD_m_sample: the associated RMSD matrix
     """
     n = len(conform_sample)
     RMSD_m_sample = np.zeros((n, n))
-    for k in tqdm(range(n)):
-        for i in range(n):
-            RMSD_m_sample[k, i] = quaternion_rmsd(np.array(conform_sample[k][0]), np.array(conform_sample[i][0]))
+    if method == "quaternion":
+        for k in tqdm(range(n)):
+            for i in range(n):
+                RMSD_m_sample[k, i] = quaternion_rmsd(np.array(conform_sample[k][0]), np.array(conform_sample[i][0]))
+    elif method == "kabsch":
+        for k in tqdm(range(n)):
+            for i in range(n):
+                RMSD_m_sample[k, i] = kabsch_rmsd(np.array(conform_sample[k][0]), np.array(conform_sample[i][0]))
+    else:
+        print("Method not valid, please enter a method among quaternion and kabsch")
     return RMSD_m_sample
 
 
@@ -218,3 +229,74 @@ def rmsd(V, W):
     for v, w in zip(V, W):
         rmsd += sum([(v[i] - w[i]) ** 2.0 for i in range(D)])
     return np.sqrt(rmsd / N)
+
+def kabsch_rmsd(P, Q):
+    """
+    Rotate matrix P unto Q using Kabsch algorithm and calculate the RMSD.
+    Parameters
+    ----------
+    P : array
+        (N,D) matrix, where N is points and D is dimension.
+    Q : array
+        (N,D) matrix, where N is points and D is dimension.
+    Returns
+    -------
+    rmsd : float
+        root-mean squared deviation
+    """
+    P = kabsch_rotate(P, Q)
+    return rmsd(P, Q)
+
+
+def kabsch_rotate(P, Q):
+    """
+    Rotate matrix P unto matrix Q using Kabsch algorithm.
+    Parameters
+    ----------
+    P : array
+        (N,D) matrix, where N is points and D is dimension.
+    Q : array
+        (N,D) matrix, where N is points and D is dimension.
+    Returns
+    -------
+    P : array
+        (N,D) matrix, where N is points and D is dimension,
+        rotated
+    """
+    U = kabsch(P, Q)
+
+    # Rotate P
+    P = np.dot(P, U)
+    return P
+
+
+def kabsch(P, Q):
+    """
+    Compute optimal rotation matrix U
+    Parameters
+    ----------
+    P : array
+        (N,D) matrix, where N is points and D is dimension.
+    Q : array
+        (N,D) matrix, where N is points and D is dimension.
+    Returns
+    -------
+    U : matrix
+        Rotation matrix (D,D)
+    """
+
+    # Computation of the covariance matrix
+    C = np.dot(np.transpose(P), Q)
+
+    # Computation of the optimal rotation matrix
+    V, S, W = np.linalg.svd(C)
+    d = (np.linalg.det(V) * np.linalg.det(W)) < 0.0
+
+    if d:
+        S[-1] = -S[-1]
+        V[:, -1] = -V[:, -1]
+
+    # Create Rotation matrix U
+    U = np.dot(V, W)
+
+    return U
