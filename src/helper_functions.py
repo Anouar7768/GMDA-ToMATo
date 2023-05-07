@@ -68,6 +68,21 @@ def get_sample_conformation(conformations, step):
     return conform_sample
 
 
+def get_dihedral_sample(dihedral, step):
+    """
+    Extract a sample from dihedral dataset, to show the final clusters
+    :param dihedral: original dihedral dataset
+    :param step: step at which we bypass conformations
+    :return: dihedral_sample: the extracted sample from dihedral dataset
+    """
+    dihedral_sample = []
+    for k in range(len(dihedral)):
+        if k % step == 0:
+            dihedral_sample.append(dihedral[k])
+    dihedral_sample = np.array(dihedral_sample)
+    return dihedral_sample
+
+
 def compute_RMSD_matrix(conform_sample):
     """
     Compute the RMSD matrix for a sample of conformations
