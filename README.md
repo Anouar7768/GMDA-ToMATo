@@ -8,9 +8,9 @@ There are two python scripts which are located in the **src** folder.
 
 *Example* : `python src/compute_RMSD.py -s 400 -f test.txt`  
 
-2)`run_ToMATo.py` is the second script that runs the ToMATo algorithm and store the labels of clustering. To run `run_ToMATo.py` script, be sure you are in the folder **GMDA-ToMATo** (not in GMDA-ToMATo/src), and specify the following arguments:
+2) `run_ToMATo.py` is the second script that runs the ToMATo algorithm and store the labels of clustering. To run `run_ToMATo.py` script, be sure you are in the folder **GMDA-ToMATo** (not in GMDA-ToMATo/src), and specify the following arguments:
 - **in_filename** the filename of the input file, where the RMSD matrix is stored.
 - **out_filename** the filename of the output file, where we will store the labels
 - **n_clusters** the number of clusters for the ToMATo algorithm 
 
-*Example* : `python src/run_ToMATo.py -if 400 test.txt -of output.txt -n 5`  
+*Example* : `python src/run_ToMATo.py -if test.txt -of output.txt -n 5`  
