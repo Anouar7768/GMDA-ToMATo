@@ -7,7 +7,7 @@ from gudhi.clustering.tomato import Tomato
 
 # Setting hyper-parameters
 density = "logDTM"
-k = 30
+k = 50
 
 # Reading the RMSD matrix
 parser = argparse.ArgumentParser(description='Description of your script')
